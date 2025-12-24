@@ -4,6 +4,14 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
 // GET - получить все объекты
 export async function GET() {
   try {
+    // Проверяем наличие Supabase клиента
+    if (!supabase) {
+      return NextResponse.json(
+        { error: "Database not configured", useMock: true },
+        { status: 503 }
+      );
+    }
+
     const { data, error } = await supabase
       .from("properties")
       .select("*")
