@@ -30,7 +30,29 @@ export async function createToken(username: string): Promise<string> {
 export async function verifyToken(token: string): Promise<AuthPayload | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload as AuthPayload;
+    
+    // Валидация структуры payload
+    if (
+      typeof payload === 'object' &&
+      payload !== null &&
+      'username' in payload &&
+      'role' in payload &&
+      'iat' in payload &&
+      'exp' in payload &&
+      typeof payload.username === 'string' &&
+      payload.role === 'admin' &&
+      typeof payload.iat === 'number' &&
+      typeof payload.exp === 'number'
+    ) {
+      return {
+        username: payload.username,
+        role: 'admin',
+        iat: payload.iat,
+        exp: payload.exp,
+      };
+    }
+    
+    return null;
   } catch {
     return null;
   }
