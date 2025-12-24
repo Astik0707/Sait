@@ -1,4 +1,4 @@
-export type PropertyStatus = "sale" | "rent";
+export type PropertyStatus = "sale";
 
 export interface Property {
   id: string;
@@ -16,7 +16,7 @@ export interface Property {
 
 export interface Deal {
   id: string;
-  badge: "Продано" | "Сдано";
+  badge: "Продано";
   district: string;
   dateLabel: string;
   priceRub?: number;
@@ -42,19 +42,6 @@ export const properties: Property[] = [
     imageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
     description: "Светлая трёхкомнатная квартира с панорамным видом на Эльбрус. Свежий ремонт, качественные материалы, продуманная планировка.",
     features: ["Панорамные окна", "Встроенная кухня", "Два санузла", "Закрытый двор"],
-  },
-  {
-    id: "2",
-    title: "Современная студия в новостройке",
-    district: "Горный",
-    addressHint: "пр. Шогенцукова",
-    priceRub: 28000,
-    areaM2: 38,
-    rooms: 1,
-    status: "rent",
-    imageUrl: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&q=80",
-    description: "Уютная студия с дизайнерским ремонтом. Идеально для молодой пары или одного человека. Рядом парк и инфраструктура.",
-    features: ["Мебель", "Техника", "Кондиционер", "Интернет"],
   },
   {
     id: "3",
@@ -83,19 +70,6 @@ export const properties: Property[] = [
     features: ["Свежий ремонт", "Балкон", "Кладовая"],
   },
   {
-    id: "5",
-    title: "Коммерческое помещение",
-    district: "Центр",
-    addressHint: "пр. Ленина",
-    priceRub: 65000,
-    areaM2: 120,
-    rooms: 4,
-    status: "rent",
-    imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
-    description: "Помещение под офис или магазин на первой линии. Высокий пешеходный трафик, отдельный вход.",
-    features: ["Первая линия", "Отдельный вход", "Витрины", "Парковка"],
-  },
-  {
     id: "6",
     title: "Пентхаус с террасой",
     district: "Центр",
@@ -107,19 +81,6 @@ export const properties: Property[] = [
     imageUrl: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
     description: "Эксклюзивный пентхаус на последнем этаже. Терраса 50 м², панорамный вид на город и горы.",
     features: ["Терраса", "Умный дом", "Дизайнерский ремонт", "Охрана"],
-  },
-  {
-    id: "7",
-    title: "Уютная однушка у парка",
-    district: "Горный",
-    addressHint: "ул. Байсултанова",
-    priceRub: 22000,
-    areaM2: 32,
-    rooms: 1,
-    status: "rent",
-    imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80",
-    description: "Чистая, светлая квартира с хорошим ремонтом. В пешей доступности парк и остановки.",
-    features: ["Мебель", "Стиральная машина", "Холодильник"],
   },
   {
     id: "8",
@@ -159,14 +120,6 @@ export const deals: Deal[] = [
     note: "3-комнатная квартира, 92 м²",
   },
   {
-    id: "2",
-    badge: "Сдано",
-    district: "Горный",
-    dateLabel: "Октябрь 2024",
-    priceRub: 35000,
-    note: "Студия с дизайнерским ремонтом",
-  },
-  {
     id: "3",
     badge: "Продано",
     district: "Александровка",
@@ -181,14 +134,6 @@ export const deals: Deal[] = [
     dateLabel: "Август 2024",
     priceRub: 3900000,
     note: "2-комнатная квартира после ремонта",
-  },
-  {
-    id: "5",
-    badge: "Сдано",
-    district: "Центр",
-    dateLabel: "Август 2024",
-    priceRub: 55000,
-    note: "Офисное помещение, 80 м²",
   },
   {
     id: "6",
@@ -209,7 +154,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "2",
     initials: "М.Б.",
-    text: "Искали аренду долго сами — не получалось. Обратились в Pach Group, нашли идеальный вариант за неделю.",
+    text: "Помогли найти идеальный дом для семьи. Профессиональный подход, все документы в порядке. Рекомендую.",
   },
   {
     id: "3",

@@ -27,8 +27,12 @@ const itemVariants = {
 
 export default function Deals() {
   return (
-    <section id="deals" className="py-24 md:py-32 bg-neutral-50">
-      <div className="container-width section-padding">
+    <section id="deals" className="relative py-24 md:py-32 bg-neutral-50 overflow-hidden">
+      {/* Static background elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl" />
+      
+      <div className="relative z-10 container-width section-padding">
         {/* Section header */}
         <div className="text-center mb-12">
           <motion.span
@@ -71,38 +75,66 @@ export default function Deals() {
             <motion.article
               key={deal.id}
               variants={itemVariants}
-              className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-neutral-300 transition-colors shadow-sm hover:shadow-md"
+              whileHover={{ y: -6, scale: 1.02 }}
+              className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-accent/30 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/10 relative overflow-hidden group"
             >
+              {/* Animated background gradient on hover */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+                className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent"
+              />
+              
               {/* Badge and date */}
-              <div className="flex items-center justify-between mb-4">
-                <span
-                  className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                    deal.badge === "Продано"
-                      ? "bg-accent/10 text-accent"
-                      : "bg-blue-500/10 text-blue-600"
-                  }`}
+              <div className="relative z-10 flex items-center justify-between mb-4">
+                <motion.span
+                  whileHover={{ scale: 1.1 }}
+                  className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-accent/10 text-accent border border-accent/20"
                 >
                   {deal.badge}
-                </span>
-                <span className="text-neutral-600 text-sm">{deal.dateLabel}</span>
+                </motion.span>
+                <motion.span
+                  whileHover={{ scale: 1.05 }}
+                  className="text-neutral-600 text-sm font-medium"
+                >
+                  {deal.dateLabel}
+                </motion.span>
               </div>
 
               {/* Note */}
-              <p className="text-neutral-900 font-medium mb-3">{deal.note}</p>
+              <motion.p
+                whileHover={{ x: 4 }}
+                className="relative z-10 text-neutral-900 font-medium mb-3 transition-colors group-hover:text-accent"
+              >
+                {deal.note}
+              </motion.p>
 
               {/* District and price */}
-              <div className="flex items-center justify-between">
-                <span className="text-neutral-600 text-sm flex items-center gap-1.5">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="relative z-10 flex items-center justify-between">
+                <motion.span
+                  whileHover={{ scale: 1.05, color: "#722F37" }}
+                  className="text-neutral-600 text-sm flex items-center gap-1.5 transition-colors"
+                >
+                  <motion.svg
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  </motion.svg>
                   {deal.district}
-                </span>
+                </motion.span>
                 {deal.priceRub && (
-                  <span className="text-accent font-semibold">
-                    {formatPrice(deal.priceRub, deal.badge === "Сдано")}
-                  </span>
+                  <motion.span
+                    whileHover={{ scale: 1.1 }}
+                    className="text-accent font-semibold text-lg"
+                  >
+                    {formatPrice(deal.priceRub, false)}
+                  </motion.span>
                 )}
               </div>
             </motion.article>

@@ -33,10 +33,35 @@ export default function HouseAnimation() {
       id="about"
       className="relative py-24 md:py-32 lg:py-40 overflow-hidden bg-gradient-to-b from-white to-neutral-50"
     >
-      {/* Декоративные элементы */}
+      {/* Animated decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-accent/3 rounded-full blur-3xl" />
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.1, 0.2, 0.1],
+            rotate: [0, 180, 360],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-20 right-10 w-64 h-64 bg-accent/5 rounded-full blur-3xl"
+        />
+        <motion.div
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.08, 0.15, 0.08],
+            rotate: [360, 180, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+          className="absolute bottom-20 left-10 w-96 h-96 bg-accent/3 rounded-full blur-3xl"
+        />
       </div>
 
       <div className="relative z-10 container-width section-padding">
@@ -95,19 +120,32 @@ export default function HouseAnimation() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 + index * 0.1 }}
-                  className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/50 transition-colors"
+                  whileHover={{ x: 8, scale: 1.02 }}
+                  className="flex items-start gap-4 p-4 rounded-xl hover:bg-white/80 transition-all duration-300 border border-transparent hover:border-accent/20 hover:shadow-lg relative overflow-hidden group"
                 >
-                  <div className="flex-shrink-0 w-14 h-14 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center text-2xl">
+                  <motion.div
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex-shrink-0 w-14 h-14 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center text-2xl relative z-10"
+                  >
                     {feature.icon}
-                  </div>
-                  <div>
-                    <h4 className="text-neutral-900 font-semibold mb-1 text-lg">
+                  </motion.div>
+                  <div className="relative z-10">
+                    <motion.h4
+                      whileHover={{ color: "#722F37" }}
+                      className="text-neutral-900 font-semibold mb-1 text-lg transition-colors"
+                    >
                       {feature.title}
-                    </h4>
+                    </motion.h4>
                     <p className="text-neutral-600 text-sm leading-relaxed">
                       {feature.text}
                     </p>
                   </div>
+                  <motion.div
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: 0 }}
+                    className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent"
+                  />
                 </motion.div>
               ))}
             </motion.div>
@@ -131,22 +169,41 @@ export default function HouseAnimation() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.4 + index * 0.1 }}
-                    className="relative flex items-center gap-4 p-5 bg-white border border-neutral-200 rounded-xl hover:border-accent/30 hover:shadow-md transition-all"
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    className="relative flex items-center gap-4 p-5 bg-white border border-neutral-200 rounded-xl hover:border-accent/30 hover:shadow-xl hover:shadow-accent/10 transition-all duration-300 group overflow-hidden"
                   >
-                    <div className="flex-shrink-0 w-12 h-12 bg-accent text-white rounded-lg flex items-center justify-center font-bold text-lg relative z-10">
+                    <motion.div
+                      whileHover={{ rotate: 360, scale: 1.1 }}
+                      transition={{ duration: 0.5 }}
+                      className="flex-shrink-0 w-12 h-12 bg-accent text-white rounded-lg flex items-center justify-center font-bold text-lg relative z-10 shadow-lg"
+                    >
                       {step.number}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="text-neutral-900 font-semibold mb-1">
+                    </motion.div>
+                    <div className="flex-1 relative z-10">
+                      <motion.h4
+                        whileHover={{ x: 4, color: "#722F37" }}
+                        className="text-neutral-900 font-semibold mb-1 transition-colors"
+                      >
                         {step.title}
-                      </h4>
+                      </motion.h4>
                       <p className="text-neutral-600 text-sm">
                         {step.desc}
                       </p>
                     </div>
                     {index < steps.length - 1 && (
-                      <div className="absolute left-6 top-full w-0.5 h-4 bg-accent/20" />
+                      <motion.div
+                        initial={{ scaleY: 0 }}
+                        whileInView={{ scaleY: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                        className="absolute left-6 top-full w-0.5 h-4 bg-gradient-to-b from-accent/30 to-transparent"
+                      />
                     )}
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: 0 }}
+                      className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent"
+                    />
                   </motion.div>
                 ))}
               </div>

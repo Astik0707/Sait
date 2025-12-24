@@ -201,8 +201,7 @@ function Scene({ scrollProgress }: House3DProps) {
       <OrbitControls
         enableZoom={false}
         enablePan={false}
-        autoRotate
-        autoRotateSpeed={0.5}
+        enableRotate={false}
         minPolarAngle={Math.PI / 3}
         maxPolarAngle={Math.PI / 2.2}
       />

@@ -54,8 +54,11 @@ const itemVariants = {
 
 export default function Testimonials() {
   return (
-    <section className="py-24 md:py-32 bg-neutral-50">
-      <div className="container-width section-padding">
+    <section className="relative py-24 md:py-32 bg-neutral-50 overflow-hidden">
+      {/* Static background elements */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      
+      <div className="relative z-10 container-width section-padding">
         {/* Section header */}
         <div className="text-center mb-12">
           <motion.span
@@ -89,31 +92,51 @@ export default function Testimonials() {
             <motion.article
               key={testimonial.id}
               variants={itemVariants}
-              className="bg-white rounded-2xl p-8 border border-neutral-200 shadow-sm"
+              whileHover={{ y: -8, scale: 1.02 }}
+              className="bg-white rounded-2xl p-8 border border-neutral-200 hover:border-accent/30 shadow-sm hover:shadow-xl hover:shadow-accent/10 transition-all duration-300 relative overflow-hidden group"
             >
+              {/* Animated background on hover */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+                className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent"
+              />
+              
               {/* Quote icon */}
-              <svg
-                className="w-10 h-10 text-accent/30 mb-6"
+              <motion.svg
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.6 }}
+                className="w-10 h-10 text-accent/30 mb-6 relative z-10"
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </svg>
+              </motion.svg>
 
               {/* Quote text */}
-              <p className="text-neutral-700 text-lg leading-relaxed mb-6">
+              <motion.p
+                whileHover={{ x: 4 }}
+                className="text-neutral-700 text-lg leading-relaxed mb-6 relative z-10"
+              >
                 {testimonial.text}
-              </p>
+              </motion.p>
 
               {/* Author */}
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center">
+              <motion.div
+                whileHover={{ x: 4 }}
+                className="flex items-center gap-3 relative z-10"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 360 }}
+                  transition={{ duration: 0.5 }}
+                  className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center border border-accent/20"
+                >
                   <span className="text-accent font-semibold text-sm">
                     {testimonial.initials}
                   </span>
-                </div>
+                </motion.div>
                 <span className="text-neutral-600 text-sm">Клиент</span>
-              </div>
+              </motion.div>
             </motion.article>
           ))}
         </motion.div>
@@ -133,12 +156,22 @@ export default function Testimonials() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-4"
+                whileHover={{ scale: 1.05, x: 4 }}
+                className="flex items-center gap-4 p-4 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
               >
-                <div className="flex-shrink-0 w-12 h-12 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center text-accent">
+                <motion.div
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.5 }}
+                  className="flex-shrink-0 w-12 h-12 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center text-accent"
+                >
                   {item.icon}
-                </div>
-                <span className="text-neutral-900 font-medium">{item.title}</span>
+                </motion.div>
+                <motion.span
+                  whileHover={{ color: "#722F37" }}
+                  className="text-neutral-900 font-medium transition-colors"
+                >
+                  {item.title}
+                </motion.span>
               </motion.div>
             ))}
           </div>

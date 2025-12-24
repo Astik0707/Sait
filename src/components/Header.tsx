@@ -58,8 +58,8 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* CTA Button */}
-          <div className="hidden lg:block">
+          {/* CTA Buttons */}
+          <div className="hidden lg:flex items-center gap-3">
             <button onClick={scrollToContacts} className="btn-primary text-sm">
               Связаться
             </button>
@@ -127,6 +127,7 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
     </header>
   );
 }
