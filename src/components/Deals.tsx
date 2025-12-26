@@ -1,7 +1,17 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { deals, formatPrice } from "@/data/mock";
+import { formatPrice } from "@/data/mock";
+
+interface Deal {
+  id: string;
+  badge: "Продано";
+  district: string;
+  dateLabel: string;
+  priceRub?: number;
+  note: string;
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -26,6 +36,27 @@ const itemVariants = {
 };
 
 export default function Deals() {
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Загружаем сделки из API
+    fetch("/api/deals")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setDeals(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching deals:", error);
+        setDeals([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
   return (
     <section id="deals" className="relative py-24 md:py-32 bg-neutral-50 overflow-hidden">
       {/* Static background elements */}
@@ -64,14 +95,34 @@ export default function Deals() {
         </div>
 
         {/* Deals grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {deals.map((deal) => (
+        {isLoading ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-6 border border-neutral-200 animate-pulse"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="h-6 w-20 bg-neutral-200 rounded-full"></div>
+                  <div className="h-4 w-24 bg-neutral-200 rounded"></div>
+                </div>
+                <div className="h-5 w-full bg-neutral-200 rounded mb-3"></div>
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-16 bg-neutral-200 rounded"></div>
+                  <div className="h-5 w-24 bg-neutral-200 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : deals.length > 0 ? (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {deals.map((deal) => (
             <motion.article
               key={deal.id}
               variants={itemVariants}
@@ -138,19 +189,15 @@ export default function Deals() {
                 )}
               </div>
             </motion.article>
-          ))}
-        </motion.div>
-
-        {/* Disclaimer */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-neutral-500 text-sm mt-8"
-        >
-          * Примеры. Для MVP используются демонстрационные данные.
-        </motion.p>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-neutral-500 text-lg">
+              Сделки появятся здесь после добавления в админ-панели
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );

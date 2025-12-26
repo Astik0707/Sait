@@ -97,22 +97,14 @@ export default function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="pt-8 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-4"
+          className="pt-8 border-t border-neutral-200 flex flex-col sm:flex-row items-center justify-end gap-4"
         >
-          <p className="text-neutral-500 text-sm">
-            © {new Date().getFullYear()} Pach Group. Все права защищены.
-          </p>
-          <div className="flex items-center gap-4">
-            <p className="text-neutral-500 text-xs">
-              Демонстрационный сайт (MVP)
-            </p>
-            <a
-              href="/admin/login"
-              className="text-neutral-400 hover:text-neutral-600 text-xs transition-colors"
-            >
-              Вход
-            </a>
-          </div>
+          <a
+            href="/admin/login"
+            className="text-neutral-400 hover:text-neutral-600 text-xs transition-colors"
+          >
+            Вход
+          </a>
         </motion.div>
       </div>
     </footer>

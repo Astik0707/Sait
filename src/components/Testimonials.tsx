@@ -69,6 +69,111 @@ const itemVariants = {
   },
 };
 
+// Компонент карточки отзыва с возможностью сворачивания
+function TestimonialCard({ testimonial, variants }: { testimonial: Testimonial; variants: any }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const MAX_LENGTH = 200; // Максимальная длина текста до обрезки
+  const shouldTruncate = testimonial.text.length > MAX_LENGTH;
+  const displayText = isExpanded || !shouldTruncate 
+    ? testimonial.text 
+    : testimonial.text.substring(0, MAX_LENGTH) + "...";
+
+  return (
+    <motion.article
+      variants={variants}
+      whileHover={{ y: -8, scale: 1.02 }}
+      className="bg-white rounded-2xl p-8 border border-neutral-200 hover:border-accent/30 shadow-sm hover:shadow-xl hover:shadow-accent/10 transition-all duration-300 relative overflow-hidden group"
+    >
+      {/* Animated background on hover */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+        className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent"
+      />
+      
+      {/* Quote icon */}
+      <motion.svg
+        whileHover={{ rotate: 360, scale: 1.1 }}
+        transition={{ duration: 0.6 }}
+        className="w-10 h-10 text-accent/30 mb-6 relative z-10"
+        fill="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+      </motion.svg>
+
+      {/* Quote text */}
+      <motion.p
+        whileHover={{ x: 4 }}
+        className="text-neutral-700 text-lg leading-relaxed mb-4 relative z-10"
+      >
+        {displayText}
+      </motion.p>
+
+      {/* Кнопка "Читать далее/Свернуть" */}
+      {shouldTruncate && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-accent hover:text-accent/80 font-medium text-sm mb-6 relative z-10 transition-colors flex items-center gap-1 group/btn"
+        >
+          {isExpanded ? (
+            <>
+              <span>Свернуть</span>
+              <svg
+                className="w-4 h-4 transition-transform group-hover/btn:-translate-y-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 15l7-7 7 7"
+                />
+              </svg>
+            </>
+          ) : (
+            <>
+              <span>Читать далее</span>
+              <svg
+                className="w-4 h-4 transition-transform group-hover/btn:translate-y-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </>
+          )}
+        </button>
+      )}
+
+      {/* Author */}
+      <motion.div
+        whileHover={{ x: 4 }}
+        className="flex items-center gap-3 relative z-10"
+      >
+        <motion.div
+          whileHover={{ scale: 1.1, rotate: 360 }}
+          transition={{ duration: 0.5 }}
+          className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center border border-accent/20"
+        >
+          <span className="text-accent font-semibold text-sm">
+            {testimonial.initials}
+          </span>
+        </motion.div>
+        <span className="text-neutral-600 text-sm">Клиент</span>
+      </motion.div>
+    </motion.article>
+  );
+}
+
 export default function Testimonials({ initialDgisRating = null }: TestimonialsProps) {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -256,55 +361,7 @@ export default function Testimonials({ initialDgisRating = null }: TestimonialsP
             className="grid md:grid-cols-3 gap-6 mb-16"
           >
             {testimonials.map((testimonial) => (
-            <motion.article
-              key={testimonial.id}
-              variants={itemVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              className="bg-white rounded-2xl p-8 border border-neutral-200 hover:border-accent/30 shadow-sm hover:shadow-xl hover:shadow-accent/10 transition-all duration-300 relative overflow-hidden group"
-            >
-              {/* Animated background on hover */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent"
-              />
-              
-              {/* Quote icon */}
-              <motion.svg
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.6 }}
-                className="w-10 h-10 text-accent/30 mb-6 relative z-10"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
-              </motion.svg>
-
-              {/* Quote text */}
-              <motion.p
-                whileHover={{ x: 4 }}
-                className="text-neutral-700 text-lg leading-relaxed mb-6 relative z-10"
-              >
-                {testimonial.text}
-              </motion.p>
-
-              {/* Author */}
-              <motion.div
-                whileHover={{ x: 4 }}
-                className="flex items-center gap-3 relative z-10"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 360 }}
-                  transition={{ duration: 0.5 }}
-                  className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center border border-accent/20"
-                >
-                  <span className="text-accent font-semibold text-sm">
-                    {testimonial.initials}
-                  </span>
-                </motion.div>
-                <span className="text-neutral-600 text-sm">Клиент</span>
-              </motion.div>
-            </motion.article>
+              <TestimonialCard key={testimonial.id} testimonial={testimonial} variants={itemVariants} />
             ))}
           </motion.div>
         ) : (
