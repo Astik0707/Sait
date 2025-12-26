@@ -6,10 +6,8 @@ export async function GET() {
   try {
     // Проверяем наличие Supabase клиента
     if (!supabase) {
-      return NextResponse.json(
-        { error: "Database not configured", useMock: true },
-        { status: 503 }
-      );
+      // Возвращаем пустой массив вместо ошибки
+      return NextResponse.json([]);
     }
 
     const { data, error } = await supabase
@@ -20,15 +18,12 @@ export async function GET() {
 
     if (error) {
       console.error("Supabase error:", error);
-      // Fallback на mock данные, если БД не настроена
-      return NextResponse.json(
-        { error: "Database not configured", useMock: true },
-        { status: 503 }
-      );
+      // Возвращаем пустой массив вместо ошибки
+      return NextResponse.json([]);
     }
 
     // Преобразуем формат из БД в формат фронтенда
-    const properties = data.map((prop) => ({
+    const properties = (data || []).map((prop) => ({
       id: prop.id,
       title: prop.title,
       district: prop.district,
@@ -45,10 +40,8 @@ export async function GET() {
     return NextResponse.json(properties);
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    // Возвращаем пустой массив вместо ошибки
+    return NextResponse.json([]);
   }
 }
 

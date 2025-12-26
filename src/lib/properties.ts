@@ -1,7 +1,6 @@
 import { Property } from "@/data/mock";
-import { properties as mockProperties } from "@/data/mock";
 
-// Получить все объекты (с fallback на mock)
+// Получить все объекты (только из БД, без fallback на mock)
 export async function getProperties(): Promise<Property[]> {
   try {
     const response = await fetch("/api/properties", {
@@ -9,17 +8,23 @@ export async function getProperties(): Promise<Property[]> {
     });
 
     if (!response.ok) {
-      // Если API не работает (БД не настроена), используем mock
-      console.warn("API not available, using mock data");
-      return mockProperties;
+      // Если API не работает (БД не настроена), возвращаем пустой массив
+      console.warn("API not available, returning empty array");
+      return [];
     }
 
     const data = await response.json();
-    return data;
+    
+    // Проверяем, что это массив (а не объект с ошибкой)
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    return [];
   } catch (error) {
     console.error("Error fetching properties:", error);
-    // Fallback на mock данные
-    return mockProperties;
+    // Возвращаем пустой массив вместо mock данных
+    return [];
   }
 }
 
@@ -32,13 +37,19 @@ export async function getPropertiesServer(): Promise<Property[]> {
     });
 
     if (!response.ok) {
-      return mockProperties;
+      return [];
     }
 
-    return await response.json();
+    const data = await response.json();
+    
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    return [];
   } catch (error) {
     console.error("Error fetching properties (server):", error);
-    return mockProperties;
+    return [];
   }
 }
 
