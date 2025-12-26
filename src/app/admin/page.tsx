@@ -21,6 +21,7 @@ export default function AdminDashboard() {
     type: "success" | "error" | null;
     message: string;
   }>({ type: null, message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // Проверяем авторизацию
@@ -44,7 +45,12 @@ export default function AdminDashboard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Защита от множественной отправки
+    if (isSubmitting) return;
+    
     setSubmitStatus({ type: null, message: "" });
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/properties", {
@@ -110,6 +116,8 @@ export default function AdminDashboard() {
             ? error.message
             : "Ошибка при сохранении объекта. Проверьте консоль.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -392,9 +400,17 @@ export default function AdminDashboard() {
               </a>
               <button
                 type="submit"
-                className="flex-1 bg-accent hover:bg-accent/90 text-white font-medium py-3 px-4 rounded-xl transition-colors"
+                disabled={isSubmitting}
+                className="flex-1 bg-accent hover:bg-accent/90 disabled:bg-neutral-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
-                Сохранить объект
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Сохранение...
+                  </>
+                ) : (
+                  "Сохранить объект"
+                )}
               </button>
             </div>
           </form>
