@@ -16,6 +16,14 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
   // Create a mock carousel with the same image repeated
   const images = property ? [property.imageUrl, property.imageUrl, property.imageUrl] : [];
 
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   useEffect(() => {
     if (property) {
       document.body.style.overflow = "hidden";
@@ -27,14 +35,20 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
     };
   }, [property]);
 
-  // Handle escape key
+  // Handle escape key and arrow keys
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "ArrowLeft") {
+        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      } else if (e.key === "ArrowRight") {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }
     };
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, images.length]);
 
   if (!property) return null;
 
@@ -91,20 +105,50 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Carousel navigation */}
-                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2">
-                    {images.map((_, index) => (
+                  {/* Navigation arrows */}
+                  {images.length > 1 && (
+                    <>
+                      {/* Previous button */}
                       <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          index === currentImageIndex
-                            ? "bg-white w-6"
-                            : "bg-white/50 hover:bg-white/75"
-                        }`}
-                      />
-                    ))}
-                  </div>
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                        aria-label="Предыдущее фото"
+                      >
+                        <svg className="w-6 h-6 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Next button */}
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                        aria-label="Следующее фото"
+                      >
+                        <svg className="w-6 h-6 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Carousel navigation dots */}
+                  {images.length > 1 && (
+                    <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2">
+                      {images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentImageIndex
+                              ? "bg-white w-6"
+                              : "bg-white/50 hover:bg-white/75"
+                          }`}
+                          aria-label={`Перейти к фото ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
 
                   {/* Status badge */}
                   <div className="absolute top-4 left-4">
