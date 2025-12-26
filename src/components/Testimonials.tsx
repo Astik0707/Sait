@@ -1,7 +1,24 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { testimonials } from "@/data/mock";
+
+interface Testimonial {
+  id: string;
+  initials: string;
+  text: string;
+}
+
+interface DGISRating {
+  rating: number;
+  reviewsCount: number;
+  reviewsUrl: string;
+  warning?: string;
+}
+
+interface TestimonialsProps {
+  initialDgisRating?: DGISRating | null;
+}
 
 const trustItems = [
   {
@@ -52,7 +69,48 @@ const itemVariants = {
   },
 };
 
-export default function Testimonials() {
+export default function Testimonials({ initialDgisRating = null }: TestimonialsProps) {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dgisRating, setDgisRating] = useState<DGISRating | null>(initialDgisRating);
+  const [isLoadingRating, setIsLoadingRating] = useState(!initialDgisRating);
+
+  useEffect(() => {
+    // Загружаем отзывы из API
+    fetch("/api/testimonials")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setTestimonials(data);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching testimonials:", error);
+        setTestimonials([]);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    // Загружаем рейтинг из 2ГИС только если не был передан через SSR
+    if (!initialDgisRating) {
+      fetch("/api/2gis-rating")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.rating !== undefined && data.reviewsCount !== undefined) {
+            setDgisRating(data);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching 2GIS rating:", error);
+          // Не критично, просто не показываем рейтинг
+        })
+        .finally(() => {
+          setIsLoadingRating(false);
+        });
+    }
+  }, [initialDgisRating]);
+
   return (
     <section className="relative py-24 md:py-32 bg-neutral-50 overflow-hidden">
       {/* Static background elements */}
@@ -78,17 +136,126 @@ export default function Testimonials() {
           >
             Что говорят клиенты
           </motion.h2>
+
+          {/* 2ГИС рейтинг и кнопка */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8"
+          >
+            {!isLoadingRating && dgisRating && (
+              <div className="flex items-center gap-3 bg-white rounded-xl px-6 py-3 border border-neutral-200 shadow-sm">
+                {/* Звёздочки */}
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const filled = star <= Math.round(dgisRating.rating);
+                    const halfFilled =
+                      !filled &&
+                      star === Math.ceil(dgisRating.rating) &&
+                      dgisRating.rating % 1 >= 0.5;
+                    return (
+                      <div key={star} className="relative">
+                        <svg
+                          className={`w-5 h-5 ${
+                            filled
+                              ? "text-yellow-400 fill-current"
+                              : "text-neutral-300"
+                          }`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        {halfFilled && (
+                          <div className="absolute inset-0 overflow-hidden w-1/2">
+                            <svg
+                              className="w-5 h-5 text-yellow-400 fill-current"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-neutral-900">
+                    {dgisRating.rating.toFixed(1)}
+                  </span>
+                  <span className="text-xs text-neutral-500">
+                    {dgisRating.reviewsCount}{" "}
+                    {dgisRating.reviewsCount === 1
+                      ? "отзыв"
+                      : dgisRating.reviewsCount < 5
+                      ? "отзыва"
+                      : "отзывов"}
+                  </span>
+                </div>
+              </div>
+            )}
+            <motion.a
+              href={
+                dgisRating?.reviewsUrl ||
+                "https://2gis.ru/nalchik/branches/70000001034124982/firm/70000001096815639/43.576255%2C43.470569/tab/reviews"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center gap-2 bg-accent hover:bg-accent/90 text-white font-medium px-6 py-3 rounded-xl transition-colors shadow-sm hover:shadow-md"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+              Смотреть все отзывы в 2ГИС
+            </motion.a>
+          </motion.div>
         </div>
 
         {/* Testimonials grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid md:grid-cols-3 gap-6 mb-16"
-        >
-          {testimonials.map((testimonial) => (
+        {isLoading ? (
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-8 border border-neutral-200 animate-pulse"
+              >
+                <div className="h-10 w-10 bg-neutral-200 rounded mb-6"></div>
+                <div className="space-y-3 mb-6">
+                  <div className="h-4 bg-neutral-200 rounded"></div>
+                  <div className="h-4 bg-neutral-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-neutral-200 rounded w-4/6"></div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-neutral-200 rounded-full"></div>
+                  <div className="h-4 bg-neutral-200 rounded w-20"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : testimonials.length > 0 ? (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid md:grid-cols-3 gap-6 mb-16"
+          >
+            {testimonials.map((testimonial) => (
             <motion.article
               key={testimonial.id}
               variants={itemVariants}
@@ -138,8 +305,15 @@ export default function Testimonials() {
                 <span className="text-neutral-600 text-sm">Клиент</span>
               </motion.div>
             </motion.article>
-          ))}
-        </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="text-center py-12 mb-16">
+            <p className="text-neutral-500 text-lg">
+              Отзывы появятся здесь после добавления в админ-панели
+            </p>
+          </div>
+        )}
 
         {/* Trust strip */}
         <motion.div
