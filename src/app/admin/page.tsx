@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Tab = "properties" | "testimonials" | "deals";
 
@@ -32,6 +33,7 @@ interface Property {
   rooms: number;
   status: string;
   imageUrl: string;
+  imageUrls?: string[];
   description: string;
   features: string[];
 }
@@ -48,6 +50,7 @@ export default function AdminDashboard() {
     areaM2: "",
     rooms: "",
     imageUrl: "",
+    imageUrls: [] as string[],
     description: "",
     features: "",
   });
@@ -74,6 +77,8 @@ export default function AdminDashboard() {
   }>({ type: null, message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittingTestimonial, setIsSubmittingTestimonial] = useState(false);
+  const [editingPropertyId, setEditingPropertyId] = useState<string | null>(null);
+  const [viewingImage, setViewingImage] = useState<string | null>(null);
 
   useEffect(() => {
     // Проверяем авторизацию
@@ -100,6 +105,17 @@ export default function AdminDashboard() {
       loadProperties();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    // Закрытие модального окна по Escape
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && viewingImage) {
+        setViewingImage(null);
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [viewingImage]);
 
   const loadTestimonials = async () => {
     setIsLoadingTestimonials(true);
@@ -151,6 +167,45 @@ export default function AdminDashboard() {
     router.push("/admin/login");
   };
 
+  const handleEditProperty = (property: Property) => {
+    setEditingPropertyId(property.id);
+    // Если есть imageUrls, используем их, иначе используем imageUrl
+    const imageUrls = property.imageUrls && property.imageUrls.length > 0 
+      ? property.imageUrls 
+      : (property.imageUrl ? [property.imageUrl] : []);
+    
+    setFormData({
+      title: property.title,
+      district: property.district,
+      addressHint: property.addressHint,
+      priceRub: property.priceRub.toString(),
+      areaM2: property.areaM2.toString(),
+      rooms: property.rooms.toString(),
+      imageUrl: property.imageUrl,
+      imageUrls: imageUrls,
+      description: property.description,
+      features: Array.isArray(property.features) ? property.features.join(", ") : "",
+    });
+    // Прокручиваем к форме
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPropertyId(null);
+    setFormData({
+      title: "",
+      district: "",
+      addressHint: "",
+      priceRub: "",
+      areaM2: "",
+      rooms: "",
+      imageUrl: "",
+      imageUrls: [],
+      description: "",
+      features: "",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -161,24 +216,42 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/properties", {
-        method: "POST",
+      const url = editingPropertyId 
+        ? `/api/properties?id=${editingPropertyId}`
+        : "/api/properties";
+      const method = editingPropertyId ? "PUT" : "POST";
+
+      // Подготавливаем данные для отправки
+      const requestData = {
+        title: formData.title,
+        district: formData.district,
+        addressHint: formData.addressHint,
+        priceRub: formData.priceRub,
+        areaM2: formData.areaM2,
+        rooms: formData.rooms,
+        imageUrl:
+          formData.imageUrls.length > 0
+            ? formData.imageUrls[0]
+            : formData.imageUrl ||
+              "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+        imageUrls: formData.imageUrls.length > 0 ? formData.imageUrls : (formData.imageUrl ? [formData.imageUrl] : []),
+        description: formData.description,
+        features: formData.features,
+      };
+
+      console.log("Sending property data:", {
+        ...requestData,
+        imageUrls: requestData.imageUrls, // Отправляем весь массив
+        imageUrlsCount: requestData.imageUrls.length,
+        imageUrl: requestData.imageUrl.substring(0, 50) + "..."
+      });
+
+      const response = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          title: formData.title,
-          district: formData.district,
-          addressHint: formData.addressHint,
-          priceRub: formData.priceRub,
-          areaM2: formData.areaM2,
-          rooms: formData.rooms,
-          imageUrl:
-            formData.imageUrl ||
-            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
-          description: formData.description,
-          features: formData.features,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       const data = await response.json();
@@ -193,27 +266,22 @@ export default function AdminDashboard() {
           });
           return;
         }
-        throw new Error(data.error || "Ошибка при сохранении");
+        // Показываем детальную информацию об ошибке
+        const errorMessage = data.details 
+          ? `${data.error || "Ошибка при сохранении"}: ${data.details}`
+          : (data.error || "Ошибка при сохранении");
+        throw new Error(errorMessage);
       }
 
       setSubmitStatus({
         type: "success",
-        message: "Объект успешно добавлен в базу данных!",
+        message: editingPropertyId 
+          ? "Объект успешно обновлен!" 
+          : "Объект успешно добавлен в базу данных!",
       });
 
       // Очищаем форму и обновляем список
-      setFormData({
-        title: "",
-        district: "",
-        addressHint: "",
-        priceRub: "",
-        areaM2: "",
-        rooms: "",
-        imageUrl: "",
-        description: "",
-        features: "",
-      });
-
+      handleCancelEdit();
       await loadProperties();
 
       setTimeout(() => setSubmitStatus({ type: null, message: "" }), 5000);
@@ -510,9 +578,19 @@ export default function AdminDashboard() {
           <div className="space-y-6">
             {/* Add Property Form */}
             <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 md:p-8">
-              <h1 className="text-2xl font-bold text-neutral-900 mb-6">
-                Добавить новый объект
-              </h1>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-neutral-900">
+                  {editingPropertyId ? "Редактировать объект" : "Добавить новый объект"}
+                </h1>
+                {editingPropertyId && (
+                  <button
+                    onClick={handleCancelEdit}
+                    className="text-neutral-600 hover:text-neutral-900 text-sm font-medium transition-colors"
+                  >
+                    Отменить
+                  </button>
+                )}
+              </div>
 
           {submitStatus.type && (
             <div
@@ -630,7 +708,7 @@ export default function AdminDashboard() {
 
             <div>
               <label className="block text-neutral-700 text-sm font-medium mb-2">
-                Изображение
+                Изображения
               </label>
               <div className="flex gap-3">
                 <label className="flex-1 cursor-pointer">
@@ -655,18 +733,32 @@ export default function AdminDashboard() {
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     className="hidden"
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
+                      const files = Array.from(e.target.files || []);
+                      if (files.length > 0) {
+                        const readers = files.map((file) => {
+                          return new Promise<string>((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              resolve(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                        });
+
+                        Promise.all(readers).then((results) => {
                           setFormData({
                             ...formData,
-                            imageUrl: reader.result as string,
+                            imageUrls: [...formData.imageUrls, ...results],
+                            imageUrl: results[0] || formData.imageUrl, // Первое изображение для обратной совместимости
                           });
-                        };
-                        reader.readAsDataURL(file);
+                          // Очищаем input, чтобы можно было загрузить те же файлы снова
+                          if (e.target) {
+                            (e.target as HTMLInputElement).value = "";
+                          }
+                        });
                       }
                     }}
                   />
@@ -677,40 +769,204 @@ export default function AdminDashboard() {
                 <input
                   type="url"
                   value={formData.imageUrl.startsWith("data:") ? "" : formData.imageUrl}
-                  onChange={(e) =>
-                    setFormData({ ...formData, imageUrl: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const url = e.target.value;
+                    if (url && !formData.imageUrls.includes(url)) {
+                      setFormData({
+                        ...formData,
+                        imageUrl: url,
+                        imageUrls: formData.imageUrls.length === 0 ? [url] : [...formData.imageUrls, url],
+                      });
+                    } else {
+                      setFormData({ ...formData, imageUrl: url });
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      const url = (e.target as HTMLInputElement).value;
+                      if (url && !formData.imageUrls.includes(url)) {
+                        setFormData({
+                          ...formData,
+                          imageUrl: url,
+                          imageUrls: [...formData.imageUrls, url],
+                        });
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
                   className="flex-1 px-4 py-3 bg-white border border-neutral-300 rounded-xl text-neutral-900 placeholder:text-neutral-500 focus:outline-none focus:border-accent transition-colors text-sm"
-                  placeholder="Вставьте URL изображения"
-                  disabled={formData.imageUrl.startsWith("data:")}
+                  placeholder="Вставьте URL изображения и нажмите Enter"
+                  disabled={formData.imageUrls.some((url) => url.startsWith("data:"))}
                 />
               </div>
-              {formData.imageUrl && (
-                <div className="mt-3 relative">
-                  <img
-                    src={formData.imageUrl}
-                    alt="Превью"
-                    className="w-full h-40 object-cover rounded-xl border border-neutral-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, imageUrl: "" })}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
+              {formData.imageUrls.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm text-neutral-600 mb-2">
+                    Первое изображение будет главным. Нажмите на изображение, чтобы установить его главным.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {formData.imageUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Превью ${index + 1}`}
+                          className={`w-full h-32 object-cover rounded-xl border-2 cursor-pointer hover:opacity-90 transition-opacity ${
+                            index === 0 
+                              ? "border-accent shadow-md" 
+                              : "border-neutral-200"
+                          }`}
+                          onClick={() => {
+                            // Перемещаем изображение на первое место
+                            const newUrls = [...formData.imageUrls];
+                            const [movedUrl] = newUrls.splice(index, 1);
+                            newUrls.unshift(movedUrl);
+                            setFormData({
+                              ...formData,
+                              imageUrls: newUrls,
+                              imageUrl: newUrls[0],
+                            });
+                          }}
+                          onError={(e) => {
+                            // Если изображение не загрузилось, показываем placeholder
+                            (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23e5e7eb' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='12'%3EОшибка загрузки%3C/text%3E%3C/svg%3E";
+                          }}
+                        />
+                        {/* Кнопка удаления */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newUrls = formData.imageUrls.filter((_, i) => i !== index);
+                            setFormData({
+                              ...formData,
+                              imageUrls: newUrls,
+                              imageUrl: newUrls[0] || "",
+                            });
+                          }}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                          title="Удалить"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                        {/* Кнопка просмотра */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewingImage(url);
+                          }}
+                          className="absolute top-2 left-2 p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors opacity-0 group-hover:opacity-100 z-10"
+                          title="Просмотреть"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                          </svg>
+                        </button>
+                        {/* Метка главного изображения */}
+                        {index === 0 && (
+                          <div className="absolute bottom-2 left-2 px-2 py-1 bg-accent text-white text-xs font-medium rounded shadow-lg">
+                            Главное
+                          </div>
+                        )}
+                        {/* Кнопки перемещения */}
+                        {formData.imageUrls.length > 1 && (
+                          <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {index > 0 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newUrls = [...formData.imageUrls];
+                                  [newUrls[index], newUrls[index - 1]] = [newUrls[index - 1], newUrls[index]];
+                                  setFormData({
+                                    ...formData,
+                                    imageUrls: newUrls,
+                                    imageUrl: newUrls[0],
+                                  });
+                                }}
+                                className="p-1 bg-white/90 hover:bg-white rounded shadow-md"
+                                title="Влево"
+                              >
+                                <svg
+                                  className="w-3 h-3 text-neutral-700"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 19l-7-7 7-7"
+                                  />
+                                </svg>
+                              </button>
+                            )}
+                            {index < formData.imageUrls.length - 1 && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const newUrls = [...formData.imageUrls];
+                                  [newUrls[index], newUrls[index + 1]] = [newUrls[index + 1], newUrls[index]];
+                                  setFormData({
+                                    ...formData,
+                                    imageUrls: newUrls,
+                                    imageUrl: newUrls[0],
+                                  });
+                                }}
+                                className="p-1 bg-white/90 hover:bg-white rounded shadow-md"
+                                title="Вправо"
+                              >
+                                <svg
+                                  className="w-3 h-3 text-neutral-700"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 5l7 7-7 7"
+                                  />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -764,7 +1020,7 @@ export default function AdminDashboard() {
                     Сохранение...
                   </>
                 ) : (
-                  "Сохранить объект"
+                  editingPropertyId ? "Обновить объект" : "Сохранить объект"
                 )}
               </button>
             </div>
@@ -829,25 +1085,46 @@ export default function AdminDashboard() {
                             </div>
                           </div>
                         </div>
-                        <button
-                          onClick={() => handleDeleteProperty(property.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-                          title="Удалить"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => handleEditProperty(property)}
+                            className="p-2 text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                            title="Редактировать"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProperty(property.id)}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Удалить"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1186,6 +1463,54 @@ export default function AdminDashboard() {
           </div>
         )}
       </main>
+
+      {/* Image Viewer Modal */}
+      <AnimatePresence>
+        {viewingImage && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setViewingImage(null)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed inset-4 md:inset-8 lg:inset-16 z-50 flex items-center justify-center"
+            >
+              <div className="relative w-full h-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                {/* Close button */}
+                <button
+                  onClick={() => setViewingImage(null)}
+                  className="absolute top-4 right-4 z-10 p-2 bg-white/90 hover:bg-white rounded-full transition-colors shadow-lg"
+                >
+                  <svg className="w-6 h-6 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                {/* Image */}
+                <div className="flex-1 flex items-center justify-center p-4 overflow-auto">
+                  <img
+                    src={viewingImage}
+                    alt="Просмотр изображения"
+                    className="max-w-full max-h-full object-contain"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23e5e7eb' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-size='16'%3EОшибка загрузки изображения%3C/text%3E%3C/svg%3E";
+                    }}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

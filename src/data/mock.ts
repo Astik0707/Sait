@@ -10,6 +10,7 @@ export interface Property {
   rooms: number;
   status: PropertyStatus;
   imageUrl: string;
+  imageUrls?: string[];
   description: string;
   features: string[];
 }

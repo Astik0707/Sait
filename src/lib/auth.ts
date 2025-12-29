@@ -5,8 +5,8 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "default-secret-change-in-production"
 );
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+const ADMIN_USERNAME = (process.env.ADMIN_USERNAME || "admin").trim();
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || "admin123").trim();
 
 export interface AuthPayload {
   username: string;
@@ -60,7 +60,22 @@ export async function verifyToken(token: string): Promise<AuthPayload | null> {
 
 // Проверка учётных данных
 export function validateCredentials(username: string, password: string): boolean {
-  return username === ADMIN_USERNAME && password === ADMIN_PASSWORD;
+  const usernameMatch = username.trim() === ADMIN_USERNAME;
+  const passwordMatch = password === ADMIN_PASSWORD;
+  
+  // Логирование для отладки (только в development)
+  if (process.env.NODE_ENV === "development") {
+    console.log("Auth attempt:", {
+      providedUsername: username.trim(),
+      expectedUsername: ADMIN_USERNAME,
+      usernameMatch,
+      passwordMatch: password === ADMIN_PASSWORD ? "✓" : "✗",
+      hasEnvUsername: !!process.env.ADMIN_USERNAME,
+      hasEnvPassword: !!process.env.ADMIN_PASSWORD,
+    });
+  }
+  
+  return usernameMatch && passwordMatch;
 }
 
 // Получение токена из cookies

@@ -6,15 +6,19 @@ import Image from "next/image";
 import { Property, formatPrice, formatArea, getRoomsLabel } from "@/data/mock";
 
 interface PropertyModalProps {
-  property: Property | null;
+  property: (Property & { imageUrls?: string[] }) | null;
   onClose: () => void;
 }
 
 export default function PropertyModal({ property, onClose }: PropertyModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Create a mock carousel with the same image repeated
-  const images = property ? [property.imageUrl, property.imageUrl, property.imageUrl] : [];
+  // Use imageUrls if available, otherwise fallback to single imageUrl
+  const images: string[] = property 
+    ? (property.imageUrls && property.imageUrls.length > 0 
+        ? property.imageUrls 
+        : [property.imageUrl])
+    : [];
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -27,6 +31,8 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
   useEffect(() => {
     if (property) {
       document.body.style.overflow = "hidden";
+      // Сбрасываем индекс при открытии нового объекта
+      setCurrentImageIndex(0);
     } else {
       document.body.style.overflow = "";
     }
@@ -37,18 +43,24 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
 
   // Handle escape key and arrow keys
   useEffect(() => {
+    if (!property) return;
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
-      } else if (e.key === "ArrowLeft") {
-        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-      } else if (e.key === "ArrowRight") {
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      } else if (images.length > 1) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          setCurrentImageIndex((prev) => (prev + 1) % images.length);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, images.length]);
+  }, [onClose, images.length, property]);
 
   if (!property) return null;
 
@@ -86,7 +98,7 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
             <div className="flex-1 overflow-y-auto">
               <div className="grid lg:grid-cols-2 h-full">
                 {/* Image carousel */}
-                <div className="relative h-64 sm:h-80 lg:h-full">
+                <div className="relative h-64 sm:h-80 lg:h-full overflow-hidden">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentImageIndex}
@@ -96,7 +108,7 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
                       className="absolute inset-0"
                     >
                       <Image
-                        src={images[currentImageIndex]}
+                        src={images[currentImageIndex] || property.imageUrl}
                         alt={property.title}
                         fill
                         className="object-cover"
@@ -105,28 +117,38 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
                     </motion.div>
                   </AnimatePresence>
 
-                  {/* Navigation arrows */}
+                  {/* Navigation arrows - показываем всегда если есть несколько изображений */}
                   {images.length > 1 && (
                     <>
                       {/* Previous button */}
                       <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          prevImage();
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-white/95 hover:bg-white rounded-full shadow-2xl transition-all hover:scale-110 border-2 border-neutral-200 hover:border-accent"
                         aria-label="Предыдущее фото"
+                        type="button"
                       >
-                        <svg className="w-6 h-6 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        <svg className="w-7 h-7 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                         </svg>
                       </button>
 
                       {/* Next button */}
                       <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          nextImage();
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-white/95 hover:bg-white rounded-full shadow-2xl transition-all hover:scale-110 border-2 border-neutral-200 hover:border-accent"
                         aria-label="Следующее фото"
+                        type="button"
                       >
-                        <svg className="w-6 h-6 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        <svg className="w-7 h-7 text-neutral-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
                     </>
@@ -135,7 +157,7 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
                   {/* Carousel navigation dots */}
                   {images.length > 1 && (
                     <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-2">
-                      {images.map((_, index) => (
+                      {images.map((_: string, index: number) => (
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
@@ -151,11 +173,20 @@ export default function PropertyModal({ property, onClose }: PropertyModalProps)
                   )}
 
                   {/* Status badge */}
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-block px-4 py-2 text-sm font-medium rounded-full bg-accent/90 text-white">
+                  <div className="absolute top-4 left-4 z-40">
+                    <span className="inline-block px-4 py-2 text-sm font-medium rounded-full bg-accent/90 text-white shadow-lg">
                       Продажа
                     </span>
                   </div>
+
+                  {/* Image counter */}
+                  {images.length > 1 && (
+                    <div className="absolute top-4 right-4 z-40">
+                      <span className="inline-block px-3 py-1.5 text-xs font-medium rounded-full bg-black/60 text-white backdrop-blur-sm shadow-lg">
+                        {currentImageIndex + 1} / {images.length}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}

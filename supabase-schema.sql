@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS properties (
   rooms INTEGER NOT NULL,
   status TEXT NOT NULL DEFAULT 'sale' CHECK (status IN ('sale', 'sold')),
   image_url TEXT NOT NULL,
+  image_urls TEXT, -- JSON массив URL изображений
   description TEXT NOT NULL DEFAULT '',
   features TEXT[] DEFAULT ARRAY[]::TEXT[],
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

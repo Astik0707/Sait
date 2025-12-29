@@ -31,7 +31,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
+    <section className="relative flex items-center justify-center overflow-hidden bg-white">
       {/* Animated background gradients */}
       <div className="absolute inset-0 bg-gradient-to-br from-neutral-50 via-white to-neutral-50" />
       
@@ -50,7 +50,7 @@ export default function Hero() {
       <div className="absolute top-20 right-20 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 left-20 w-96 h-96 bg-accent/3 rounded-full blur-3xl" />
 
-      <div className="relative z-10 container-width section-padding py-32 md:py-40">
+      <div className="relative z-10 container-width section-padding py-16 md:py-20">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -59,7 +59,7 @@ export default function Hero() {
         >
           {/* Small tag */}
           <motion.div variants={itemVariants}>
-            <span className="inline-block px-4 py-2 bg-accent/10 text-accent border border-accent/20 rounded-full text-sm font-medium mb-8">
+            <span className="inline-block px-4 py-2 bg-accent/10 text-accent border border-accent/20 rounded-full text-sm font-medium mb-4">
               Недвижимость в Нальчике
             </span>
           </motion.div>
@@ -67,7 +67,7 @@ export default function Hero() {
           {/* Main headline */}
           <motion.h1
             variants={itemVariants}
-            className="heading-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-neutral-900 mb-6 leading-[1.1]"
+            className="heading-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-neutral-900 mb-4 leading-[1.1]"
           >
             Ваша гарантия —{" "}
             <span className="text-accent">наш опыт</span>
@@ -76,7 +76,7 @@ export default function Hero() {
           {/* Subheadline */}
           <motion.p
             variants={itemVariants}
-            className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto mb-6 leading-relaxed"
           >
             Полное сопровождение сделок с недвижимостью в Нальчике.
             <br className="hidden md:block" />
@@ -121,16 +121,16 @@ export default function Hero() {
           {/* Animated Stats strip */}
           <motion.div
             variants={itemVariants}
-            className="mt-16 pt-16 border-t border-neutral-200"
+            className="mt-8 pt-8 border-t border-neutral-200"
           >
-            <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
+            <div className="grid grid-cols-3 gap-4 md:gap-6 max-w-lg mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
                 whileHover={{ scale: 1.05 }}
-                className="text-center p-4 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
+                className="text-center p-3 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
               >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
@@ -149,7 +149,7 @@ export default function Hero() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
                 whileHover={{ scale: 1.05 }}
-                className="text-center p-4 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
+                className="text-center p-3 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
               >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
@@ -168,7 +168,7 @@ export default function Hero() {
                 viewport={{ once: true }}
                 transition={{ delay: 0.4 }}
                 whileHover={{ scale: 1.05 }}
-                className="text-center p-4 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
+                className="text-center p-3 rounded-xl hover:bg-neutral-50 transition-colors cursor-default"
               >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
@@ -185,18 +185,6 @@ export default function Hero() {
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="w-6 h-10 border-2 border-neutral-300 rounded-full flex items-start justify-center p-2">
-          <div className="w-1 h-2 bg-neutral-400 rounded-full" />
-        </div>
-      </motion.div>
     </section>
   );
 }

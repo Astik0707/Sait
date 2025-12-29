@@ -83,10 +83,10 @@ export default function Footer() {
                 +7 918 725-77-29
               </a>
               <a
-                href="tel:+79396902400"
+                href="tel:+79386902400"
                 className="block text-neutral-600 hover:text-neutral-900 transition-colors"
               >
-                +7 939 690-24-00
+                +7 938 690-24-00
               </a>
             </div>
           </div>

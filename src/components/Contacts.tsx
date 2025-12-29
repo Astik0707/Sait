@@ -131,7 +131,7 @@ export default function Contacts() {
               </a>
 
               <a
-                href="tel:+79396902400"
+                href="tel:+79386902400"
                 className="flex items-center gap-4 p-4 bg-neutral-50 rounded-2xl border border-neutral-200 hover:border-accent transition-colors group"
               >
                 <div className="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center group-hover:bg-accent/20 transition-colors">
@@ -140,7 +140,7 @@ export default function Contacts() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-neutral-900 font-medium">+7 939 690-24-00</div>
+                  <div className="text-neutral-900 font-medium">+7 938 690-24-00</div>
                   <div className="text-neutral-600 text-sm">Позвонить</div>
                 </div>
               </a>
