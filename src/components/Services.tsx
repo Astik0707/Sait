@@ -133,10 +133,10 @@ export default function Services() {
                       </svg>
                     </div>
                     <span className="text-neutral-700 group-hover:text-neutral-900 font-medium text-sm md:text-base leading-relaxed transition-colors">
-                      {service}
+                  {service}
                     </span>
                   </motion.div>
-                ))}
+              ))}
               </div>
             </div>
           </motion.div>
