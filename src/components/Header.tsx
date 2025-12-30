@@ -111,10 +111,32 @@ export default function Header() {
     };
   }, [sectionIds]);
 
-  const scrollToContacts = useCallback(() => {
-    document.getElementById("contacts")?.scrollIntoView({ behavior: "smooth" });
+  const scrollToSection = useCallback((sectionId: string) => {
     setIsMobileMenuOpen(false);
+    
+    // Небольшая задержка для закрытия меню перед прокруткой
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const headerHeight = 80; // Высота header
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - headerHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+
+        // Обновляем хэш без прокрутки
+        window.history.pushState(null, "", `#${sectionId}`);
+        setActiveSection(sectionId);
+      }
+    }, 100);
   }, []);
+
+  const scrollToContacts = useCallback(() => {
+    scrollToSection("contacts");
+  }, [scrollToSection]);
 
   const toggleMobileMenu = useCallback(() => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -123,6 +145,11 @@ export default function Header() {
   const closeMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(false);
   }, []);
+
+  const handleMobileLinkClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault();
+    scrollToSection(sectionId);
+  }, [scrollToSection]);
 
   return (
     <header
@@ -224,8 +251,8 @@ export default function Header() {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={closeMobileMenu}
-                    className={`block text-neutral-700 hover:text-neutral-900 transition-colors duration-200 text-lg font-medium py-2 relative ${
+                    onClick={(e) => handleMobileLinkClick(e, sectionId)}
+                    className={`block text-neutral-700 hover:text-neutral-900 transition-colors duration-200 text-lg font-medium py-2 pl-4 relative ${
                       isActive ? "text-neutral-900" : ""
                     }`}
                   >
