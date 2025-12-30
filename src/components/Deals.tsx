@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { formatPrice } from "@/data/mock";
+import DealModal from "./DealModal";
 
 interface Deal {
   id: string;
@@ -11,6 +12,8 @@ interface Deal {
   dateLabel: string;
   priceRub?: number;
   note: string;
+  imageUrl?: string;
+  imageUrls?: string[];
 }
 
 const containerVariants = {
@@ -38,6 +41,7 @@ const itemVariants = {
 export default function Deals() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
   useEffect(() => {
     // Загружаем сделки из API
@@ -122,22 +126,51 @@ export default function Deals() {
             viewport={{ once: true, margin: "-100px" }}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {deals.map((deal) => (
-            <motion.article
-              key={deal.id}
-              variants={itemVariants}
-              whileHover={{ y: -6, scale: 1.02 }}
-              className="bg-white rounded-2xl p-6 border border-neutral-200 hover:border-accent/30 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/10 relative overflow-hidden group"
-            >
-              {/* Animated background gradient on hover */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileHover={{ opacity: 1 }}
-                className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent"
-              />
-              
-              {/* Badge and date */}
-              <div className="relative z-10 flex items-center justify-between mb-4">
+            {deals.map((deal) => {
+              // Определяем изображения для отображения
+              const images = deal.imageUrls && deal.imageUrls.length > 0 
+                ? deal.imageUrls 
+                : (deal.imageUrl ? [deal.imageUrl] : []);
+              const mainImage = images[0];
+
+              return (
+              <motion.article
+                key={deal.id}
+                variants={itemVariants}
+                whileHover={{ y: -6, scale: 1.02 }}
+                onClick={() => setSelectedDeal(deal)}
+                className="bg-white rounded-2xl overflow-hidden border border-neutral-200 hover:border-accent/30 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-accent/10 relative group cursor-pointer"
+              >
+                {/* Animated background gradient on hover */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent z-10 pointer-events-none"
+                />
+                
+                {/* Изображение */}
+                {mainImage && (
+                  <div className="relative w-full h-48 overflow-hidden bg-neutral-100">
+                    <img
+                      src={mainImage}
+                      alt={deal.note}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    {/* Индикатор количества изображений */}
+                    {images.length > 1 && (
+                      <div className="absolute top-3 right-3 px-2 py-1 bg-black/60 text-white text-xs font-medium rounded-full backdrop-blur-sm">
+                        +{images.length - 1}
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="p-6 relative z-10">
+                  {/* Badge and date */}
+                  <div className="flex items-center justify-between mb-4">
                 <motion.span
                   whileHover={{ scale: 1.1 }}
                   className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-accent/10 text-accent border border-accent/20"
@@ -179,7 +212,7 @@ export default function Deals() {
                   </motion.svg>
                   {deal.district}
                 </motion.span>
-                {deal.priceRub && (
+                  {deal.priceRub && (
                   <motion.span
                     whileHover={{ scale: 1.1 }}
                     className="text-accent font-semibold text-lg"
@@ -188,8 +221,10 @@ export default function Deals() {
                   </motion.span>
                 )}
               </div>
-            </motion.article>
-            ))}
+                </div>
+              </motion.article>
+              );
+            })}
           </motion.div>
         ) : (
           <div className="text-center py-12">
@@ -199,6 +234,12 @@ export default function Deals() {
           </div>
         )}
       </div>
+
+      {/* Deal Modal */}
+      <DealModal
+        deal={selectedDeal}
+        onClose={() => setSelectedDeal(null)}
+      />
     </section>
   );
 }

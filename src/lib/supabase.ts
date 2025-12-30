@@ -53,6 +53,8 @@ export interface Deal {
   date_label: string;
   price_rub?: number;
   note: string;
+  image_url?: string;
+  image_urls?: string; // JSON строка или массив
   created_at?: string;
 }
 

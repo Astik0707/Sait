@@ -71,38 +71,74 @@ export default function Services() {
         </div>
 
         {/* Services */}
-        <div className="max-w-3xl mx-auto mb-20">
+        <div className="max-w-4xl mx-auto mb-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="bg-neutral-50 rounded-3xl p-8 lg:p-10 border border-neutral-200"
+            className="relative bg-gradient-to-br from-white via-neutral-50 to-neutral-50 rounded-3xl p-8 lg:p-12 border border-neutral-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
           >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 bg-accent/10 border border-accent/20 rounded-2xl flex items-center justify-center">
-                <svg className="w-7 h-7 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <h3 className="text-neutral-900 text-2xl font-display font-bold">Наши услуги</h3>
-            </div>
-            <ul className="space-y-4">
-              {saleServices.map((service, index) => (
-                <motion.li
-                  key={service}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/3 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+            
+            <div className="relative z-10">
+              {/* Header - Centered */}
+              <div className="text-center mb-10">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-start gap-3 text-neutral-700"
+                  className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent/15 to-accent/5 rounded-2xl border border-accent/20 mb-4 shadow-sm"
                 >
-                  <svg className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
-                  {service}
-                </motion.li>
-              ))}
-            </ul>
+                </motion.div>
+                <motion.h3
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="text-neutral-900 text-2xl md:text-3xl font-display font-bold mb-2"
+                >
+                  Наши услуги
+                </motion.h3>
+                <motion.p
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  className="text-neutral-600 text-sm md:text-base"
+                >
+                  Полный спектр услуг для вашей недвижимости
+                </motion.p>
+              </div>
+
+              {/* Services Grid - Centered */}
+              <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+                {saleServices.map((service, index) => (
+                  <motion.div
+                    key={service}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.08 }}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white/60 backdrop-blur-sm border border-neutral-200/60 hover:border-accent/30 hover:bg-white hover:shadow-md transition-all duration-300 group"
+                  >
+                    <div className="flex-shrink-0 w-6 h-6 mt-0.5 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-accent group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-neutral-700 group-hover:text-neutral-900 font-medium text-sm md:text-base leading-relaxed transition-colors">
+                      {service}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </motion.div>
         </div>
 

@@ -8,6 +8,12 @@ const nextConfig = {
       },
     ],
   },
+  // Увеличиваем лимит размера тела запроса для API routes
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
+  },
 };
 
 export default nextConfig;

@@ -88,6 +88,78 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PUT - обновить отзыв (требует авторизации)
+export async function PUT(request: NextRequest) {
+  try {
+    // Проверка авторизации
+    const token = request.cookies.get("auth_token")?.value;
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Missing required parameter: id" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const { initials, text } = body;
+
+    // Валидация
+    if (!initials || !text) {
+      return NextResponse.json(
+        { error: "Missing required fields: initials and text" },
+        { status: 400 }
+      );
+    }
+
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: "Database not configured" },
+        { status: 500 }
+      );
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("testimonials")
+      .update({
+        initials: initials.trim(),
+        text: text.trim(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Supabase update error:", error);
+      return NextResponse.json(
+        { error: "Failed to update testimonial", details: error.message },
+        { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { error: "Testimonial not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(data, { status: 200 });
+  } catch (error) {
+    console.error("API error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 // DELETE - удалить отзыв (требует авторизации)
 export async function DELETE(request: NextRequest) {
   try {
